@@ -1558,59 +1558,14 @@ namespace crow
             }
             else if (req.method == HTTPMethod::Options)
             {
-                std::string allow = "OPTIONS, HEAD, ";
-
-                if (req.url == "/*")
-                {
-                    for (int i = 0; i < static_cast<int>(HTTPMethod::InternalMethodCount); i++)
-                    {
-                        if (static_cast<int>(HTTPMethod::Head) == i)
-                            continue; // HEAD is always allowed
-
-                        if (!per_methods_[i].trie.is_empty())
-                        {
-                            allow += method_name(static_cast<HTTPMethod>(i)) + ", ";
-                        }
-                    }
-                    allow = allow.substr(0, allow.size() - 2);
-                    res = response(204);
-                    res.set_header("Allow", allow);
-                    res.end();
-                    found->method = method_actual;
-                    return found;
-                }
-                else
-                {
-                    bool rules_matched = false;
-                    for (int i = 0; i < static_cast<int>(HTTPMethod::InternalMethodCount); i++)
-                    {
-                        if (per_methods_[i].trie.find(req.url).rule_index)
-                        {
-                            rules_matched = true;
-
-                            if (static_cast<int>(HTTPMethod::Head) == i)
-                                continue; // HEAD is always allowed
-
-                            allow += method_name(static_cast<HTTPMethod>(i)) + ", ";
-                        }
-                    }
-                    if (rules_matched)
-                    {
-                        allow = allow.substr(0, allow.size() - 2);
-                        res = response(204);
-                        res.set_header("Allow", allow);
-                        res.end();
-                        found->method = method_actual;
-                        return found;
-                    }
-                    else
-                    {
-                        CROW_LOG_DEBUG << "Cannot match rules " << req.url;
-                        res = response(404); //TODO(EDev): Should this redirect to catchall?
-                        res.end();
-                        return found;
-                    }
-                }
+                // force to allow cross origin
+                res = response(200);
+                res.set_header("Allow", "GET,POST,PUT,DELETE");
+                res.set_header("Access-Control-Allow-Methods", "POST,GET,PUT,DELETE");
+                res.set_header("Access-Control-Allow-Headers", "X-TOKEN, x-token");
+                res.set_header("Access-Control-Allow-Origin", "*");
+                res.end();
+                found->method = HTTPMethod::Get;
             }
             else // Every request that isn't a HEAD or OPTIONS request
             {
