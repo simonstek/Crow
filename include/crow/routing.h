@@ -1566,6 +1566,7 @@ namespace crow
                 res.set_header("Access-Control-Allow-Origin", "*");
                 res.end();
                 found->method = HTTPMethod::Get;
+                return found;
             }
             else // Every request that isn't a HEAD or OPTIONS request
             {
