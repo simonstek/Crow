@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <algorithm>
+#include <string.h>
 
 #include "crow/http_request.h"
 #include "crow/http_parser_merged.h"
@@ -27,12 +28,69 @@ namespace crow
 
             return 0;
         }
+
+        static std::vector<std::string> split(std::string str, std::string delim)
+        {
+            std::vector<std::string> strs;
+            int last_start = 0;
+            size_t pos = str.find(delim, 0);
+            while (pos != std::string::npos)
+            {
+                std::string sub = str.substr(last_start, pos - last_start);
+                strs.push_back(sub);
+                last_start = pos + delim.size();
+                pos = str.find(delim, last_start);
+            }
+            if (last_start < str.size())
+            {
+                std::string sub = str.substr(last_start);
+                strs.push_back(sub);
+            }
+
+            return strs;
+        }
+
+        static void parse_options_headers(HTTPParser* self, char* at, size_t length)
+        {
+            std::vector<std::string> pairs = split(at, "\r\n");
+            for (int i = 0; i < pairs.size(); i++)
+            {
+                std::string pair = pairs[i];
+                std::vector<std::string> kv = split(pair, ": ");
+                if (kv.size() > 1)
+                {
+                    std::string key = kv.at(0);
+                    std::string value = kv.at(1);
+
+                    if (key == "Access-Control-Request-Method")
+                    {
+                        self->req.add_header("Access-Control-Allow-Method", value);
+                    }
+
+                    if (key == "Origin")
+                    {
+                        self->req.add_header("Access-Control-Allow-Origin", value);
+                    }
+
+                    if (key == "Access-Control-Request-Headers")
+                    {
+                        self->req.add_header("Access-Control-Allow-Headers", value);
+                    }
+                }
+            }
+        }
+
         static int on_url(http_parser* self_, const char* at, size_t length)
         {
             HTTPParser* self = static_cast<HTTPParser*>(self_);
             self->req.raw_url.insert(self->req.raw_url.end(), at, at + length);
             self->req.url_params = query_string(self->req.raw_url);
             self->req.url = self->req.raw_url.substr(0, self->qs_point != 0 ? self->qs_point : std::string::npos);
+
+            if (self->req.method == HTTPMethod::Options)
+            {
+                parse_options_headers(self, (char *)at, length);
+            }
 
             self->process_url();
 

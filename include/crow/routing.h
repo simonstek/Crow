@@ -1599,8 +1599,10 @@ namespace crow
                         allow = allow.substr(0, allow.size() - 2);
                         res = response(204);
                         res.set_header("Allow", allow);
-                        res.set_header("Access-Control-Allow-Origin", "*");
-                        res.set_header("Access-Control-Allow-Headers", "X-TOKEN, x-token");
+
+                        // add response headers
+                        for (auto &h : req.headers) res.add_header(h.first, h.second);
+
                         res.end();
                         found->method = method_actual;
                         return found;
