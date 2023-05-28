@@ -137,7 +137,7 @@ namespace crow
         const std::string& rule() { return rule_; }
 
     protected:
-        uint32_t methods_{1 << static_cast<int>(HTTPMethod::Get)};
+        uint32_t methods_{1 << static_cast<int>(HTTPMethod::Post)};
 
         std::string rule_;
         std::string name_;
