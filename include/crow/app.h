@@ -393,7 +393,10 @@ namespace crow
                     CROW_LOG_INFO << "Quitting Websocket: " << websocket;
                     websocket->close("Server Application Terminated");
                 }
-                if (server_) { server_->stop(); }
+                if (server_)
+                {
+                    server_->stop();
+                }
             }
         }
 
