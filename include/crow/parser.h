@@ -62,9 +62,9 @@ namespace crow
                     std::string key = kv.at(0);
                     std::string value = kv.at(1);
 
-                    if (key == "Access-Control-Request-Method")
+                    if (key == "Access-Control-Request-Methods")
                     {
-                        self->req.add_header("Access-Control-Allow-Method", value);
+                        self->req.add_header("Access-Control-Allow-Methods", value);
                     }
 
                     if (key == "Origin")
