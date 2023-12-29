@@ -69,7 +69,10 @@ namespace crow
 
                     if (key == "Origin")
                     {
-                        self->req.add_header("Access-Control-Allow-Origin", value);
+                        if (self->req.headers.find("Access-Control-Allow-Origin") == self->req.headers.end())
+                        {
+                            self->req.add_header("Access-Control-Allow-Origin", "*");
+                        }
                     }
 
                     if (key == "Access-Control-Request-Headers")
